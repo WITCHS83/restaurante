@@ -5,13 +5,13 @@ declare(strict_types=1);
 session_start();
 ob_start();
 
-require_once __DIR__ . "/config/conexao.php";
+require_once __DIR__ . "/config/conexao.php"; // aqui $conn já vem do include
 
-// Fortalece cookies de sessão (se tiver HTTPS, ative secure=1):
+// Cookies de sessão mais seguros
 ini_set('session.cookie_httponly', '1');
-// ini_set('session.cookie_secure', '1'); // descomente se estiver em HTTPS
+// ini_set('session.cookie_secure', '1'); // ative se usar HTTPS
 
-// Valida método e campos
+// Só aceita POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: logar.php");
     exit;
@@ -25,60 +25,52 @@ if ($login === '' || $senha === '') {
     exit;
 }
 
-// Busca usuário
+// Busca usuário no banco
 $sql = "SELECT idGarcon, login, senha, nv FROM garcon WHERE login = ? LIMIT 1";
-$conn = 0;
 $stmt = mysqli_prepare($conn, $sql);
 if (!$stmt) {
-    // Em produção, logue em arquivo em vez de exibir
     http_response_code(500);
-    exit("Erro interno (prepare).");
+    exit("Erro interno (prepare): " . mysqli_error($conn));
 }
 mysqli_stmt_bind_param($stmt, "s", $login);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = $result ? mysqli_fetch_assoc($result) : null;
 
-// Função que checa senha com hash (password_hash) ou com texto puro (legado)
+// Função para validar senha
 function senha_confere(string $senhaDigitada, string $senhaBanco): bool {
-    // Se senha no banco parece um hash bcrypt/argon, use password_verify
+    // Se for hash bcrypt/argon
     if (preg_match('/^\$2[ayb]\$|\$argon2(id|i|d)\$/', $senhaBanco) === 1) {
         return password_verify($senhaDigitada, $senhaBanco);
     }
-    // Fallback legado (texto puro) — **migra para hash o quanto antes**
+    // Caso legado: senha em texto puro
     return hash_equals($senhaBanco, $senhaDigitada);
 }
 
 if ($user && senha_confere($senha, (string)$user['senha'])) {
-    // Autenticado: reforça a sessão
     session_regenerate_id(true);
 
-    // Armazene o mínimo necessário
-    $_SESSION['usuario_id'] = (int)$user['idGarcon'];
+    $_SESSION['usuario_id']    = (int)$user['idGarcon'];
     $_SESSION['usuario_login'] = (string)$user['login'];
-    $_SESSION['usuario_nv'] = (string)$user['nv']; // "0", "1", "2"
+    $_SESSION['usuario_nv']    = (string)$user['nv'];
 
-    // Direciona por nível (mantendo sua lógica original)
-    if ((string)$user['nv'] === "0") {
+    // Direciona de acordo com nv
+    if ($user['nv'] === "0") {
         header("Location: inicio.php?btn=inicio");
         exit;
-    } elseif ((string)$user['nv'] === "2") {
+    } elseif ($user['nv'] === "2") {
         header("Location: pedidoscozinha.php");
         exit;
-    } elseif ((string)$user['nv'] === "1") {
-        // Sem permissão (mobile only, segundo seu fluxo)
-        // Limpa dados de sessão sensíveis
+    } elseif ($user['nv'] === "1") {
         unset($_SESSION['usuario_id'], $_SESSION['usuario_login'], $_SESSION['usuario_nv']);
         header("Location: logar.php?logar=errar");
         exit;
     } else {
-        // Nível inesperado
         unset($_SESSION['usuario_id'], $_SESSION['usuario_login'], $_SESSION['usuario_nv']);
         header("Location: logar.php?login_errado=erro");
         exit;
     }
 } else {
-    // Falha de login
     unset($_SESSION['usuario_id'], $_SESSION['usuario_login'], $_SESSION['usuario_nv']);
     header("Location: logar.php?login_errado=erro&logar=errar");
     exit;
