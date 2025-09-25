@@ -1,0 +1,23 @@
+
+Agradecemos por sua compra e a confiança.
+
+--------------------------------------------
+
+Envie todos os arquivos para o servidor de hospedagem
+
+Após crie um banco de dados com usuario e importe o arquivo da pasta "sisvendas.sql"
+
+Configure o banco nos seguintes arquivos:
+conexao\config.php
+Connections\sistema.php
+config\conexao.php
+
+
+Nosso site:
+
+
+https://temdetudoprogramas.com
+
+https://temdetudofontes.com
+
+https://www.temdetudoscript.com
