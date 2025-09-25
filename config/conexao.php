@@ -6,8 +6,10 @@ $usuario = "if0_40003100"; // usuario do banco de dados
 $senhadobanco = "AdCmW141719"; // senha do banco de dados
 $nomedobanco = "if0_40003100_restnovo"; //nome do banco de dados
 
-// NÃO ATERAR NADA DAQUI PARA BAIXO
-$db = mysqli_connect($host,$usuario,$senhadobanco) or die (mysqli_error());
-$banco = mysqli_select_db($nomedobanco,$db)or die (mysqli_error());
-mysqli_set_charset('utf8');
+$conn = mysqli_init();
+mysqli_real_connect($conn, $host, $user, $pass, $db, 3306, null, MYSQLI_CLIENT_MULTI_RESULTS);
+if (!$conn) {
+    die("Falha na conexão MySQL: " . mysqli_connect_error());
+}
+mysqli_set_charset($conn, "utf8mb4");
 ?>
