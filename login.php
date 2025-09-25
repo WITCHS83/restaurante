@@ -27,6 +27,7 @@ if ($login === '' || $senha === '') {
 
 // Busca usuário
 $sql = "SELECT idGarcon, login, senha, nv FROM garcon WHERE login = ? LIMIT 1";
+$conn = 0;
 $stmt = mysqli_prepare($conn, $sql);
 if (!$stmt) {
     // Em produção, logue em arquivo em vez de exibir

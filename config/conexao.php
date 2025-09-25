@@ -7,7 +7,7 @@ $senhadobanco = "AdCmW141719"; // senha do banco de dados
 $nomedobanco = "if0_40003100_restnovo"; //nome do banco de dados
 
 $conn = mysqli_init();
-mysqli_real_connect($conn, $host, $user, $pass, $db, 3306, null, MYSQLI_CLIENT_MULTI_RESULTS);
+mysqli_real_connect($conn, $host, $usuario, $senhadobanco, $nomedobanco, 3306, null, MYSQLI_CLIENT_MULTI_RESULTS);
 if (!$conn) {
     die("Falha na conexão MySQL: " . mysqli_connect_error());
 }
